@@ -1,43 +1,38 @@
-const connectBtn = document.getElementById('connectBtn');
-const statusText = document.getElementById('status');
+import { createAppKit } from 'https://esm.sh/@reown/appkit'
+import { EthersAdapter } from 'https://esm.sh/@reown/appkit-adapter-ethers'
+import { mainnet, bsc, polygon } from 'https://esm.sh/@reown/appkit/networks'
 
-async function connect() {
-    // التأكد من أن المستخدم يفتح الصفحة من داخل متصفح محفظة
-    if (typeof window.ethereum !== 'undefined') {
-        try {
-            // طلب إذن الوصول للحسابات
-            const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-            const address = accounts[0];
+// 1. استخدام معرف المشروع الخاص بك
+const projectId = 'cb431b6f6e2a73a72983084a5bd30989'
 
-            // تحسين شكل العنوان (0x1234...abcd)
-            const shortAddr = address.substring(0, 6) + "..." + address.substring(address.length - 4);
-            
-            // تحديث الزر
-            connectBtn.innerText = shortAddr;
-            connectBtn.classList.remove('bg-indigo-600');
-            connectBtn.classList.add('bg-gradient-to-r', 'from-green-500', 'to-emerald-600');
-            
-            statusText.innerText = "تم الربط بنجاح مع محفظة الهاتف";
-        } catch (error) {
-            statusText.innerText = "خطأ: تأكد من قبول طلب الربط";
-        }
-    } else {
-        // إذا فتح المستخدم الصفحة من متصفح عادي مثل Chrome هاتف
-        statusText.innerText = "يرجى فتح هذا الرابط من داخل متصفح MetaMask أو Trust Wallet";
-        
-        // محاولة توجيه المستخدم لفتح تطبيق ميتاماسك تلقائياً
-        setTimeout(() => {
-            window.location.href = "https://metamask.app.link/dapp/" + window.location.host + window.location.pathname;
-        }, 2000);
-    }
-}
+// 2. إعداد الشبكات (Ethereum, Binance, Polygon)
+const networks = [mainnet, bsc, polygon]
 
-connectBtn.addEventListener('click', connect);
+// 3. إنشاء مودال الاتصال
+const modal = createAppKit({
+  adapters: [new EthersAdapter()],
+  networks,
+  metadata: {
+    name: 'My Web3 App',
+    description: 'Connect Wallet Mobile',
+    url: window.location.origin, // سيأخذ رابط موقعك تلقائياً
+    icons: ['https://avatars.githubusercontent.com/u/37784886']
+  },
+  projectId,
+  themeMode: 'dark', // ليتناسب مع تصميمك
+  features: {
+    analytics: true,
+    email: false, // يمكنك تفعيلها إذا أردت تسجيل دخول بالبريد
+    socials: []
+  }
+})
 
-// الاستماع لتغيير الحساب يدوياً داخل التطبيق
-if (window.ethereum) {
-    window.ethereum.on('accountsChanged', (accounts) => {
-        if (accounts.length > 0) connect();
-        else window.location.reload();
-    });
-}
+// اختياري: طباعة العنوان في الكونسول عند التغيير
+modal.subscribeAccount(state => {
+  if (state.isConnected) {
+    console.log('Account connected:', state.address)
+    document.getElementById('info').innerText = "تم الاتصال بنجاح!"
+  } else {
+    document.getElementById('info').innerText = "بانتظار ربط المحفظة..."
+  }
+})
