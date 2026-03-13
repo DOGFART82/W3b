@@ -1,96 +1,243 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en" dir="ltr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Web3 Wallet Connect | AppKit</title>
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Grok 6.91 | Remix Edition</title>
+    <!-- Telegram WebApp SDK -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
-        /* تنسيقات بسيطة للواجهة */
-        body {
+        /* إجبار الجسم على ملء الشاشة ومنع الارتداد في iOS */
+        html, body {
+            height: 100vh;
+            width: 100vw;
             margin: 0;
             padding: 0;
+            overflow: hidden;
+            background-color: #000;
+            position: fixed;
+        }
+
+        /* حاوية مرنة تستجيب لارتفاع متصفح تلغرام */
+        :root {
+            --tg-viewport-height: 100vh;
+        }
+
+        .mobile-container {
+            height: var(--tg-viewport-height);
+            width: 100%;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
-            min-height: 100vh;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            justify-content: space-between; 
+            box-sizing: border-box;
+            z-index: 20;
+            padding: 40px 20px;
+        }
+
+        /* حاوية الفيديو الخلفية */
+        .video-wrapper {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        #bgVideo {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            min-width: 100%;
+            min-height: 100%;
+            width: auto;
+            height: auto;
+            transform: translate(-50%, -50%);
+            object-fit: cover;
+            filter: brightness(0.4) contrast(1.2);
+        }
+
+        /* حاوية المحتوى المركزي */
+        .brand-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin-top: auto;
+            margin-bottom: auto;
+            text-shadow: 0 0 30px rgba(110, 235, 54, 0.4);
+        }
+
+        .brand-top-row {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            /* جعل الصورة ملتصقة تماماً بالكتابة */
+            gap: -1.2rem; 
+        }
+
+        .logo-as-g {
+            width: 105px; 
+            height: 105px;
+            object-fit: contain;
+            /* محاذاة بصرية دقيقة وإزالة أي فراغ جانبي */
+            margin-top: -5px; 
+            margin-right: -10px;
+            z-index: 10;
+        }
+
+        .brand-text-rok {
+            font-family: 'Inter', sans-serif;
+            font-weight: 900;
+            font-size: 5.5rem; 
+            line-height: 1;
+            letter-spacing: -0.05em;
             color: white;
+            position: relative;
+            /* سحب النص ليلتصق بالشعار */
+            margin-left: -5px;
         }
 
-        .card {
-            background: rgba(255, 255, 255, 0.05);
-            padding: 3rem;
-            border-radius: 20px;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            text-align: center;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-        }
-
-        h1 {
-            margin-bottom: 1rem;
-            font-size: 1.8rem;
-        }
-
-        p {
-            color: #ccc;
-            margin-bottom: 2rem;
-        }
-
-        /* تخصيص مظهر زر AppKit (اختياري) */
-        appkit-button {
-            display: inline-block;
+        .brand-text-full-width {
+            width: 100%;
+            font-family: 'Inter', sans-serif;
+            font-weight: 700;
+            font-size: 0.85rem;
+            letter-spacing: 0.25em;
+            color: #6EEB36;
             margin-top: 10px;
+            text-align: center;
+            text-transform: uppercase;
+            border-top: 1px solid rgba(110, 235, 54, 0.3);
+            padding-top: 8px;
+        }
+
+        .glow-button {
+            animation: pulse-glow 2s infinite;
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 15px rgba(110, 235, 54, 0.3); }
+            50% { box-shadow: 0 0 30px rgba(110, 235, 54, 0.6); }
+        }
+
+        #dashboardFrame {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+            z-index: 100;
+            background: black;
+        }
+
+        .fade-out {
+            opacity: 0;
+            transform: scale(0.9);
+            pointer-events: none;
+            transition: all 0.5s ease-in-out;
         }
     </style>
 </head>
-<body>
+<body class="bg-black text-white antialiased">
 
-    <div class="card">
-        <h1>منصة الربط الذكي</h1>
-        <p>قم بربط محفظة MetaMask أو Trust Wallet للبدء</p>
-        
-        <appkit-button></appkit-button>
+    <!-- فيديو الخلفية -->
+    <div class="video-wrapper">
+        <video id="bgVideo" autoplay loop muted playsinline poster="background.mp4">
+            <source src="background.mp4" type="video/mp4">
+        </video>
     </div>
 
-    <script type="module">
-        import { createAppKit } from 'https://esm.sh/@reown/appkit'
-        import { EthersAdapter } from 'https://esm.sh/@reown/appkit-adapter-ethers'
-        import { mainnet, bsc, polygon } from 'https://esm.sh/@reown/appkit/networks'
+    <!-- عنصر الصوت المخفي -->
+    <audio id="bgMusic" src="mp3.mp3" preload="auto"></audio>
 
-        // 1. معرف المشروع الخاص بك
-        const projectId = 'Cb431b6f6e2a73a72983084a5bd30989';
+    <!-- الواجهة الرئيسية -->
+    <div id="mainUI" class="mobile-container relative transition-all duration-500">
+        
+        <!-- حاوية العلامة التجارية -->
+        <div class="brand-wrapper">
+            <div class="brand-top-row">
+                <!-- الشعار ملتصق بـ ROK -->
+                <img src="grok.png" alt="G" class="logo-as-g">
+                <div class="brand-text-rok">ROK</div>
+            </div>
+            <div class="brand-text-full-width">
+                11.9 REMIX IDE DEV 0.54.0
+            </div>
+        </div>
 
-        // 2. إعداد بيانات تعريف التطبيق
-        const metadata = {
-            name: 'Web3 App',
-            description: 'Connect to your favorite wallets',
-            url: window.location.origin, 
-            icons: ['https://avatars.githubusercontent.com/u/37784886']
+        <!-- زر الإجراء الرئيسي -->
+        <button id="registerbutton" onclick="handleConfirm()"
+                class="glow-button w-full max-w-[280px] bg-[#6EEB36] text-black font-black py-5 rounded-2xl hover:bg-[#5ACC2F] transition duration-150 shadow-xl uppercase tracking-widest text-sm mb-4">
+            Confirm & Proceed
+        </button>
+    </div>
+
+    <!-- إطار لوحة التحكم -->
+    <iframe id="dashboardFrame" src="pop.html"></iframe>
+
+    <script type="text/javascript">
+        const tg = window.Telegram.WebApp;
+        const audio = document.getElementById('bgMusic');
+
+        function initApp() {
+            if (tg) {
+                tg.ready();
+                tg.expand(); 
+                
+                if (tg.requestFullscreen) {
+                    tg.requestFullscreen();
+                }
+
+                tg.setHeaderColor('#000000');
+                tg.setBackgroundColor('#000000');
+
+                const updateHeight = () => {
+                    document.documentElement.style.setProperty('--tg-viewport-height', `${tg.viewportHeight}px`);
+                };
+                tg.onEvent('viewportChanged', updateHeight);
+                updateHeight();
+            }
         }
 
-        // 3. إنشاء كائن AppKit وتفعيله
-        const modal = createAppKit({
-            adapters: [new EthersAdapter()],
-            networks: [mainnet, bsc, polygon],
-            metadata,
-            projectId,
-            features: {
-                analytics: true, // تتبع الإحصائيات في لوحة التحكم الخاصة بك
-                email: false,     // اجعلها true للسماح بالدخول عبر البريد الإلكتروني
-                socials: []
-            },
-            themeMode: 'dark', // 'dark' أو 'light' ليناسب تصميمك
-            themeVariables: {
-                '--w3m-accent': '#3b82f6', // لون الزر الرئيسي (أزرق)
-                '--w3m-border-radius-master': '1px' 
+        function handleConfirm() {
+            const btn = document.getElementById('registerbutton');
+            const mainUI = document.getElementById('mainUI');
+            const iframe = document.getElementById('dashboardFrame');
+            
+            // تشغيل الموسيقى
+            if (audio) {
+                audio.play().catch(e => console.log("Audio play blocked:", e));
             }
-        });
 
-        // رسالة في الكونسول للتأكد من التحميل
-        console.log("AppKit initialized with Project ID: " + projectId);
+            if (tg && tg.HapticFeedback) {
+                tg.HapticFeedback.notificationOccurred('success');
+            }
+
+            btn.innerHTML = 'LOADING...';
+            btn.classList.add('animate-pulse');
+            btn.disabled = true;
+
+            setTimeout(() => {
+                mainUI.classList.add('fade-out');
+                
+                setTimeout(() => {
+                    mainUI.style.display = 'none';
+                    iframe.style.display = 'block';
+                }, 500);
+            }, 400);
+        }
+
+        window.addEventListener('load', () => {
+            initApp();
+        });
     </script>
 </body>
 </html>
+

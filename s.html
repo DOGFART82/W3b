@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web3 Connect AppKit</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background-color: #0f172a;
+            color: white;
+            font-family: sans-serif;
+        }
+    </style>
+</head>
+<body class="flex flex-col items-center justify-center min-h-screen p-4">
+
+    <div class="bg-slate-800 p-8 rounded-2xl shadow-2xl text-center max-w-md w-full border border-slate-700">
+        <h1 class="text-2xl font-bold mb-6 text-blue-400">بوابة الاتصال الذكية</h1>
+        <p class="text-slate-400 mb-8">قم بربط محفظتك للوصول إلى خدمات Web3</p>
+
+        <div class="flex justify-center">
+            <appkit-button></appkit-button>
+        </div>
+
+        <div id="status" class="mt-6 p-4 bg-slate-900 rounded-lg text-sm text-slate-500 hidden">
+            سيظهر هنا تفاصيل الاتصال...
+        </div>
+    </div>
+
+    <script type="module">
+        import { createAppKit } from 'https://esm.sh/@reown/appkit'
+        import { Ethers5Adapter } from 'https://esm.sh/@reown/appkit-adapter-ethers5'
+        import { mainnet, bsc } from 'https://esm.sh/@reown/appkit/networks'
+
+        // 1. ضع هنا الـ Project ID الخاص بك
+        const projectId = 'Cb431b6f6e2a73a72983084a5bd30989';
+
+        // 2. إعدادات الموقع/التطبيق
+        const metadata = {
+            name: 'My Web3 App',
+            description: 'AppKit Vanilla JS Integration',
+            url: window.location.origin, 
+            icons: ['https://avatars.githubusercontent.com/u/37784886']
+        }
+
+        // 3. إنشاء نسخة AppKit
+        const modal = createAppKit({
+            adapters: [new Ethers5Adapter()],
+            networks: [mainnet, bsc],
+            metadata,
+            projectId,
+            features: {
+                analytics: true, // اختياري لمراقبة عدد الاتصالات
+                email: true,     // للسماح بالاتصال عبر البريد الإلكتروني
+                socials: ['google', 'x', 'github'], // خيارات تسجيل دخول اجتماعي
+            },
+            themeMode: 'dark' // لضبط المظهر ليناسب تصميمك
+        })
+
+        // 4. (اختياري) مراقبة حالة الاتصال برمجياً
+        const statusDiv = document.getElementById('status');
+        
+        // يمكنك استخدام أحداث (Events) لمراقبة التغيير
+        modal.subscribeState(state => {
+            if (state.open) {
+                console.log('المودال مفتوح الآن');
+            }
+        });
+
+    </script>
+</body>
+</html>
