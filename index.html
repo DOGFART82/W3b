@@ -3,20 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AppKit Web3 Connect</title>
+    <title>AppKit Connect</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* ضمان ظهور حاوية الزر */
+        w3m-button {
+            display: block;
+            min-height: 50px;
+        }
+    </style>
 </head>
 <body class="bg-[#050505] text-white flex items-center justify-center min-h-screen">
 
-    <div class="text-center p-6 bg-[#111] rounded-3xl border border-gray-800 shadow-2xl w-full max-w-sm">
-        <h1 class="text-xl font-bold mb-4">بوابة الدفع اللامركزية</h1>
-        <p class="text-gray-400 mb-8 text-sm">اربط محفظة Ethereum الخاصة بك</p>
+    <div class="text-center p-8 bg-[#111] rounded-3xl border border-gray-800 shadow-2xl w-full max-w-sm">
+        <h1 class="text-xl font-bold mb-6">ربط المحفظة</h1>
         
-        <div class="flex justify-center">
-            <w3m-button balance="show" size="md"></w3m-button>
+        <div id="buttonContainer" class="flex justify-center min-h-[50px]">
+            <w3m-button></w3m-button>
         </div>
 
-        <div id="info" class="mt-6 text-xs text-gray-500"></div>
+        <p id="status" class="mt-6 text-xs text-gray-500 italic">إذا لم يظهر الزر، تأكد من اتصالك بالإنترنت</p>
     </div>
 
     <script type="module" src="app.js"></script>
