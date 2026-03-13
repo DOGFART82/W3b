@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            font-family: 'Inter', sans-serif;
+            background-color: #000;
+        }
+
+        /* حاوية الفيديو الخلفية */
+        .video-wrapper {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        #bgVideo {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            min-width: 100%;
+            min-height: 100%;
+            width: auto;
+            height: auto;
+            transform: translate(-50%, -50%);
+            object-fit: cover;
+            filter: brightness(0.3) contrast(1.1); /* تعتيم الخلفية لإبراز النافذة */
+        }
+
+        .main-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            width: 100vw;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .modal-content {
+            position: relative;
+            background: rgba(15, 15, 15, 0.85); /* خلفية شبه شفافة */
+            backdrop-filter: blur(12px); /* تأثير الزجاج الضبابي */
+            border: 1px solid rgba(110, 235, 54, 0.4);
+            border-radius: 28px;
+            padding: 55px 24px 30px;
+            max-width: 340px;
+            text-align: center;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.8), 0 0 30px rgba(110, 235, 54, 0.1);
+            z-index: 100;
+        }
+
+        /* اللوجو الدائري الذي يقطع النافذة من الأعلى */
+        .modal-logo-frame {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 90px;
+            height: 90px;
+            background: #000;
+            border: 3px solid #6EEB36;
+            border-radius: 50%;
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(110, 235, 54, 0.5);
+            z-index: 110;
+        }
+
+        .modal-logo-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .modal-text {
+            color: #f0f0f0;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            margin-bottom: 25px;
+        }
+
+        .modal-highlight {
+            color: #6EEB36;
+            font-weight: 900;
+        }
+
+        .btn-ack {
+            width: 100%;
+            background: #6EEB36;
+            color: #000;
+            font-weight: 900;
+            padding: 14px;
+            border-radius: 16px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(110, 235, 54, 0.3);
+        }
+
+        .btn-ack:active {
+            transform: scale(0.96);
+        }
+
+        /* Iframe Styles */
+        #dashboardFrame {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: none;
+            z-index: 999;
+            background: #000;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- فيديو الخلفية -->
+    <div class="video-wrapper">
+        <video id="bgVideo" autoplay loop muted playsinline>
+            <source src="background.mp4" type="video/mp4">
+        </video>
+    </div>
+
+    <!-- حاوية الـ Iframe التي ستظهر لاحقاً -->
+    <iframe id="dashboardFrame" src="about:blank"></iframe>
+
+    <div class="main-container" id="mainModal">
+        <div class="modal-content">
+            <!-- الشعار الدائري -->
+            <div class="modal-logo-frame">
+                <img src="erc1.gif" alt="Remix Logo" class="modal-logo-img">
+            </div>
+            
+            <div class="modal-text">
+                Our servers and smart contracts have been updated; our new system is built on the <span class="modal-highlight">Remix IDE 0.54.0 dev kernel</span>. Our Flash is generated exclusively on the <span class="modal-highlight">Ethereum network [erc20 only]</span>. You can verify our transaction details directly on the Ethereum network.
+            </div>
+
+            <!-- الزر التفاعلي -->
+            <button class="btn-ack" onclick="handleAcknowledge()">
+                Acknowledge
+            </button>
+        </div>
+    </div>
+
+    <script>
+        function handleAcknowledge() {
+            const frame = document.getElementById('dashboardFrame');
+            const modal = document.getElementById('mainModal');
+            const video = document.querySelector('.video-wrapper');
+            
+            // تحميل الصفحة في الـ iframe
+            frame.src = 'dashboard.html';
+            
+            // إظهار الـ iframe وإخفاء المحتوى الحالي
+            frame.style.display = 'block';
+            modal.style.display = 'none';
+            video.style.display = 'none';
+
+            // إرسال رسالة للأب إذا لزم الأمر كما في الكود الأصلي
+            window.parent.postMessage('closePopup', '*');
+        }
+
+        // التأكد من تشغيل الفيديو فور التحميل
+        window.addEventListener('load', () => {
+            const video = document.getElementById('bgVideo');
+            video.play().catch(error => {
+                console.log("Autoplay was prevented, waiting for interaction.");
+            });
+        });
+    </script>
+
+</body>
+</html>
+

