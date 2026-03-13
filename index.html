@@ -3,26 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AppKit Connect</title>
+    <title>Wagmi AppKit Connect</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        /* ضمان ظهور حاوية الزر */
-        w3m-button {
-            display: block;
-            min-height: 50px;
-        }
-    </style>
 </head>
-<body class="bg-[#050505] text-white flex items-center justify-center min-h-screen">
+<body class="bg-[#0a0a0a] text-white flex items-center justify-center min-h-screen">
 
-    <div class="text-center p-8 bg-[#111] rounded-3xl border border-gray-800 shadow-2xl w-full max-w-sm">
-        <h1 class="text-xl font-bold mb-6">ربط المحفظة</h1>
+    <div class="text-center p-10 bg-[#111] rounded-[2rem] border border-gray-800 shadow-2xl w-full max-w-sm">
+        <h1 class="text-2xl font-bold mb-2">Web3 Wallet</h1>
+        <p class="text-gray-500 mb-8 text-sm">اربط محفظتك عبر AppKit</p>
         
-        <div id="buttonContainer" class="flex justify-center min-h-[50px]">
-            <w3m-button></w3m-button>
+        <div class="flex justify-center min-h-[50px]">
+            <appkit-button></appkit-button>
         </div>
 
-        <p id="status" class="mt-6 text-xs text-gray-500 italic">إذا لم يظهر الزر، تأكد من اتصالك بالإنترنت</p>
+        <div id="status" class="mt-6 text-[10px] text-gray-600 break-all uppercase tracking-widest">
+            بانتظار الاتصال...
+        </div>
     </div>
 
     <script type="module" src="app.js"></script>
