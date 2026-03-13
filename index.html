@@ -3,23 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Web3 Phone Connect</title>
+    <title>AppKit Web3 Connect</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-black text-white flex flex-col items-center justify-center min-h-screen p-4">
+<body class="bg-[#050505] text-white flex items-center justify-center min-h-screen">
 
-    <div class="bg-gray-900 p-8 rounded-3xl shadow-2xl border border-gray-800 text-center w-full max-w-sm">
-        <h2 class="text-xl font-bold mb-2">بوابة Ethereum</h2>
-        <p class="text-gray-400 mb-8 text-sm">اتصل بمحفظتك لعرض العنوان</p>
+    <div class="text-center p-6 bg-[#111] rounded-3xl border border-gray-800 shadow-2xl w-full max-w-sm">
+        <h1 class="text-xl font-bold mb-4">بوابة الدفع اللامركزية</h1>
+        <p class="text-gray-400 mb-8 text-sm">اربط محفظة Ethereum الخاصة بك</p>
         
-        <button id="connectBtn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-6 rounded-2xl transition-all duration-300 shadow-lg active:scale-95">
-            Connect Wallet
-        </button>
+        <div class="flex justify-center">
+            <w3m-button balance="show" size="md"></w3m-button>
+        </div>
 
-        <p id="status" class="mt-6 text-xs text-gray-500"></p>
+        <div id="info" class="mt-6 text-xs text-gray-500"></div>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
-    <script src="app.js"></script>
+    <script type="module" src="app.js"></script>
 </body>
 </html>
