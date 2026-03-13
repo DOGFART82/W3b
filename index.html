@@ -3,164 +3,179 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>بوابة ربط المحافظ الذكية</title>
+    <title>بوابة ربط المحافظ | WalletConnect</title>
     
     <script src="https://unpkg.com/@walletconnect/ethereum-provider@2.10.1/dist/index.umd.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
 
     <style>
         :root {
-            --primary: #3b82f6;
-            --success: #10b981;
-            --bg: #0f172a;
-            --card-bg: #1e293b;
-            --text-main: #ffffff;
-            --text-muted: #94a3b8;
+            --primary-color: #3b82f6;
+            --secondary-color: #1e293b;
+            --success-color: #10b981;
+            --bg-color: #0f172a;
+            --text-color: #ffffff;
         }
 
         body {
-            font-family: 'Segoe UI', system-ui, sans-serif;
-            background-color: var(--bg);
-            color: var(--text-main);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
-            margin: 0;
         }
 
-        .container {
-            background: var(--card-bg);
-            padding: 30px;
-            border-radius: 20px;
-            text-align: center;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-            max-width: 400px;
+        .card {
+            background-color: var(--secondary-color);
+            padding: 2rem;
+            border-radius: 24px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
             width: 90%;
+            max-width: 400px;
+            text-align: center;
             border: 1px solid #334155;
         }
 
-        button {
+        h2 { margin-bottom: 0.5rem; color: var(--primary-color); }
+        p { color: #94a3b8; font-size: 0.9rem; margin-bottom: 2rem; }
+
+        .btn {
             width: 100%;
-            padding: 14px;
-            font-size: 16px;
-            font-weight: bold;
+            padding: 12px 24px;
+            font-size: 1rem;
+            font-weight: 600;
             border-radius: 12px;
             border: none;
             cursor: pointer;
-            transition: 0.3s;
-            margin-top: 10px;
+            transition: all 0.3s ease;
         }
 
-        .btn-connect {
-            background: var(--primary);
+        #connectBtn {
+            background-color: var(--primary-color);
             color: white;
+            box-shadow: 0 4px 14px 0 rgba(59, 130, 246, 0.39);
         }
 
-        .btn-connect:disabled {
-            background: #475569;
-            cursor: not-allowed;
-        }
+        #connectBtn:hover { background-color: #2563eb; transform: translateY(-2px); }
+        #connectBtn:disabled { background-color: #475569; cursor: not-allowed; transform: none; }
 
-        .btn-copy {
-            background: #334155;
-            color: #38bdf8;
-            font-size: 14px;
-            padding: 8px;
-        }
-
-        #result-box {
-            margin-top: 25px;
-            padding: 15px;
-            background: #0f172a;
+        .result-container {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background-color: #0f172a;
             border-radius: 12px;
-            display: none;
-            border: 1px solid #38bdf8;
-            animation: fadeIn 0.5s ease;
+            border: 1px dashed var(--primary-color);
+            display: none; /* يظهر بعد الاتصال */
+            animation: slideUp 0.4s ease-out;
         }
 
-        .address-text {
+        .address-label { color: #94a3b8; font-size: 0.75rem; display: block; margin-bottom: 0.5rem; }
+        
+        .address-value {
             word-break: break-all;
-            font-family: monospace;
-            color: var(--success);
-            margin-bottom: 10px;
+            font-family: 'Courier New', monospace;
+            color: var(--success-color);
+            font-size: 0.85rem;
+            margin-bottom: 1rem;
             display: block;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
+        #copyBtn {
+            background-color: #334155;
+            color: #38bdf8;
+            font-size: 0.8rem;
+            padding: 8px;
+        }
+
+        #copyBtn:hover { background-color: #475569; }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <h2 style="color: #38bdf8;">ربط المحفظة</h2>
-        <p style="color: var(--text-muted);">اتصل بمحفظتك لإظهار العنوان وتأكيد الهوية</p>
+    <div class="card">
+        <h2>ربط المحفظة</h2>
+        <p>قم بتوصيل محفظتك المشفرة لعرض العنوان</p>
         
-        <button id="connectBtn" class="btn-connect">اتصل الآن</button>
+        <button id="connectBtn" class="btn">توصيل المحفظة الآن</button>
 
-        <div id="result-box">
-            <small style="color: var(--text-muted);">تم الاتصال بالعنوان:</small>
-            <span id="walletAddress" class="address-text"></span>
-            <button id="copyBtn" class="btn-copy">نسخ العنوان 📋</button>
+        <div id="resultBox" class="result-container">
+            <span class="address-label">العنوان المتصل:</span>
+            <span id="walletAddress" class="address-value"></span>
+            <button id="copyBtn" class="btn">نسخ العنوان 📋</button>
         </div>
     </div>
 
     <script>
+        const projectId = 'cb431b6f6e2a73a72983084a5bd30989'; // معرف المشروع الخاص بك
         const connectBtn = document.getElementById('connectBtn');
+        const resultBox = document.getElementById('resultBox');
+        const walletAddress = document.getElementById('walletAddress');
         const copyBtn = document.getElementById('copyBtn');
-        const resultBox = document.getElementById('result-box');
-        const walletAddressDisplay = document.getElementById('walletAddress');
 
-        const projectId = 'cb431b6f6e2a73a72983084a5bd30989'; 
+        let provider;
 
-        connectBtn.onclick = async () => {
-            connectBtn.innerText = "جاري فتح المحفظة...";
-            connectBtn.disabled = true;
-
+        // وظيفة تهيئة الربط
+        async function connect() {
             try {
-                const provider = await EthereumProvider.EthereumProvider.init({
+                connectBtn.innerText = "جاري الاتصال...";
+                connectBtn.disabled = true;
+
+                // 1. إعداد الـ Provider
+                provider = await EthereumProvider.EthereumProvider.init({
                     projectId: projectId,
-                    showQrModal: true,
-                    chains: [1], 
+                    showQrModal: true, // يظهر QR Code على الكمبيوتر وقائمة المحافظ على الهاتف
+                    chains: [1], // شبكة الإيثيريوم الرئيسية
+                    methods: ["eth_sendTransaction", "personal_sign"],
+                    events: ["chainChanged", "accountsChanged"],
                     metadata: {
-                        name: "My App",
-                        description: "Wallet Connect Test",
+                        name: "My Crypto App",
+                        description: "Wallet Connection Demo",
                         url: window.location.origin,
-                        icons: ["https://walletconnect.com/walletconnect-logo.png"]
+                        icons: ["https://avatars.githubusercontent.com/u/37784886"]
                     }
                 });
 
+                // 2. طلب الربط
                 await provider.connect();
 
-                const web3Provider = new ethers.providers.Web3Provider(provider);
-                const signer = web3Provider.getSigner();
+                // 3. استخراج العنوان باستخدام ethers.js
+                const ethersProvider = new ethers.providers.Web3Provider(provider);
+                const signer = ethersProvider.getSigner();
                 const address = await signer.getAddress();
 
-                // عرض النتيجة
-                walletAddressDisplay.innerText = address;
+                // 4. عرض النتائج في الواجهة
+                walletAddress.innerText = address;
                 resultBox.style.display = "block";
                 connectBtn.innerText = "متصل بنجاح ✅";
 
             } catch (error) {
-                console.error(error);
-                alert("فشل الاتصال");
+                console.error("Connection error:", error);
+                alert("فشل الاتصال: تأكد من استخدام متصفح يدعم المحافظ و HTTPS");
                 connectBtn.innerText = "حاول مرة أخرى";
                 connectBtn.disabled = false;
             }
-        };
+        }
 
         // وظيفة النسخ
-        copyBtn.onclick = () => {
-            const text = walletAddressDisplay.innerText;
+        function copyToClipboard() {
+            const text = walletAddress.innerText;
             navigator.clipboard.writeText(text).then(() => {
                 const originalText = copyBtn.innerText;
-                copyBtn.innerText = "تم النسخ! ✅";
+                copyBtn.innerText = "تم النسخ بنجاح! ✨";
                 setTimeout(() => copyBtn.innerText = originalText, 2000);
             });
-        };
+        }
+
+        connectBtn.addEventListener('click', connect);
+        copyBtn.addEventListener('click', copyToClipboard);
     </script>
 </body>
 </html>
